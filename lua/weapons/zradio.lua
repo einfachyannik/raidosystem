@@ -16,10 +16,8 @@ SWEP.Category = "Radiosystem"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
--- model
 SWEP.ViewModel = "models/radio/c_radio.mdl"
 SWEP.WorldModel = "models/radio/w_radio.mdl"
--- /model
 
 SWEP.Primary.ClipSize = -1
  
@@ -76,7 +74,7 @@ SWEP.defaultChannels = {
     ["Koch"] = "Service", -- Service Kräfte : Koch, Putzkraft, (Techniker)
     ["Chaos Insurgency"] = "CI", -- Chaos Insurgency
     ["Citizen"] = "Obergrund", -- Obergrund / D-Klassen
-    ["Site Director"] = "Managment"
+    ["Site Director"] = "Managment" -- Hohes Managment
 }
 
 function SWEP:SwitchChannel()
@@ -92,7 +90,6 @@ function SWEP:SwitchChannel()
                 if not IsFirstTimePredicted() then return end
 
                 self.channel = nextChannel
-                self.Owner:ChatPrint("Kanal gewechselt zu: " .. self.channel)
                 return
             else
 
@@ -104,8 +101,6 @@ function SWEP:SwitchChannel()
 
         nextIndex = nextIndex % #self.channels + 1
     end
-
-    self.Owner:ChatPrint("Du hast keine Berechtigung für die verfügbaren Kanäle!")
 end
 
 function SWEP:HasAccessToChannel(channel)
@@ -129,7 +124,7 @@ if CLIENT then
     RADIO_EXISTS = true
     function SWEP:Initialize()
         deviceScreen = vgui.Create("DFrame")
-        deviceScreen:SetSize( 157, 60 ) -- SetSize( 157, 60 )
+        deviceScreen:SetSize( 157, 60 )
         deviceScreen:SetDraggable( false )
         deviceScreen:ShowCloseButton( false )
         deviceScreen:SetTitle("")
@@ -151,13 +146,6 @@ if CLIENT then
         textScreen:SetWrap( true )
         textScreen:SetTextColor( Color( 255, 255, 255, 255 ) )
         textScreen:Center()
-
-        funkImage = vgui.Create("DImage", deviceScreen)
-        funkImage.SizeToContents()
-        --funkImage:Dock(RIGHT)
-        --funkImage.DockMargin(5, 5, 0, 0)
-        funkImage:SetImage("radio/full-battery.png")
-
         return true
 
     end
@@ -167,7 +155,7 @@ end
 function SWEP:Think()
     if not deviceScreen then return end
     deviceScreen.Paint = function()
-        if self.isOn then --radio on
+        if self.isOn then
             draw.RoundedBox( 8, 0, 0, deviceScreen:GetWide(), deviceScreen:GetTall(), Color(0,255,19) )
         else
             draw.RoundedBox( 8, 0, 0, deviceScreen:GetWide(), deviceScreen:GetTall(), Color(20,20,20)  ) 
@@ -184,13 +172,13 @@ function SWEP:PostDrawViewModel(vm, wep, ply)
         TextAngle:RotateAroundAxis(TextAngle:Right(), 185)
         TextAngle:RotateAroundAxis(TextAngle:Up(), -2)
         TextAngle:RotateAroundAxis(TextAngle:Forward( ), 95)
-        if self.isOn then --radio on
+        if self.isOn then
             if self.channel ~= nil then
                 textScreen:SetText(self.channel)
             else
                 textScreen:SetText("ERROR")
             end    
-        else --radio off
+        else
             textScreen:SetText(" ")
         end
         cam.Start3D2D(TextPos, TextAngle, 0.015)
