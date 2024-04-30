@@ -3,7 +3,7 @@ util.AddNetworkString("radio_off")
 util.AddNetworkString("radio_on")
 resource.AddWorkshop(635535045)
 
-local radioChannels = {
+local channels = {
     [1] = "Foundation",
     [2] = "Notfall",
     [3] = "MTF",
@@ -16,59 +16,57 @@ local radioChannels = {
     [10] = "Obergrund"
 }
 
-local lradioHear = {}
+local radioHear = {}
 
 local function UpdateListeners()
     for _, listener in ipairs(player.GetHumans()) do
-        lradioHear[listener] = {}
+        radioHear[listener] = {}
         for _, talker in pairs(player.GetAll()) do
-            if not listener.lradioOn or not talker.lradioOn or listener.lradioChannel ~= talker.lradioChannel then continue end
+            if not listener.radioOn or not talker.radioOn or listener.radioChannel ~= talker.radioChannel then continue end
             if IsValid(talker:GetActiveWeapon()) and talker:GetActiveWeapon():GetClass() == "zradio" then
-                lradioHear[listener][talker] = true
+                radioHear[listener][talker] = true
             end
         end
     end
 end
 
-hook.Add("InitPostEntity", "zradio_init", function()
-    timer.Create("zradio_main", DarkRP.voiceCheckTimeDelay, 0, UpdateListeners)
+hook.Add("InitPostEntity", "init", function()
+    timer.Create("main", DarkRP.voiceCheckTimeDelay, 0, UpdateListeners)
 end)
 
-hook.Add("PlayerCanHearPlayersVoice", "zradio", function(listener, talker)
-    return lradioHear[listener] and lradioHear[listener][talker], false
+hook.Add("PlayerCanHearPlayersVoice", "radio", function(listener, talker)
+    return radioHear[listener] and radioHear[listener][talker], false
 end)
 
-hook.Add("PlayerInitialSpawn", "zradio_spawnset", function(ply)
-    ply.lradioOn = false
-    ply.lradioCooldown = CurTime() + 0.5
+hook.Add("PlayerInitialSpawn", "spawnset", function(ply)
+    ply.radioOn = false
+    ply.radioCooldown = CurTime() + 0.5
 end)
 
 local function ResetRadio(ply)
-    ply.lradioOn = false
+    ply.radioOn = false
 end
 
-hook.Add("PostPlayerDeath", "zradio_reset", ResetRadio)
-hook.Add("PlayerSpawn", "zradio_reset", ResetRadio)
+hook.Add("PostPlayerDeath", "reset", ResetRadio)
+hook.Add("PlayerSpawn", "reset", ResetRadio)
 
 net.Receive("radio_on", function( len, ply )
 
     local channelIndex = net.ReadInt(8)
-    ply.lradioOn = true
-    ply.lradioChannel = channelIndex
+    ply.radioOn = true
+    ply.radioChannel = channelIndex
 
 end)
 
 net.Receive("radio_off", function( len, ply )
 
-    ply.lradioOn = false
-    ply.lradioChannel = nil
+    ply.radioOn = false
+    ply.radioChannel = nil
 
 end)
 
 -- Netzwerknachricht zum Wechseln des Kanals empfangen
 net.Receive("radio_switched_channel", function(len, ply)
     local channelIndex = net.ReadInt(8)
-    ply.lradioChannel = channelIndex
+    ply.radioChannel = channelIndex
 end)
-
-print("[zradio] SV geladen!")
